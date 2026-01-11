@@ -1,0 +1,35 @@
+# Ignore common development/system files & directories
+.git
+.gitignore
+.dockerignore
+*.log
+*.tmp
+*.swp
+
+# IDE & Editor specific files
+.idea/
+.vscode/
+
+# Dependency folders (install these inside the container)
+node_modules/
+vendor/ # For PHP, etc.
+__pycache__/ # Python cache
+
+# Build artifacts & outputs
+dist/
+build/
+target/
+
+# Environment variables & secrets
+.env
+*.env
+*.env.*
+.secrets/
+
+# Test files (if not needed in production image)
+tests/
+*.test.js
+*.spec.ts
+
+# OS-specific files
+.DS_Store
