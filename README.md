@@ -1,13 +1,7 @@
-تجربة الذكاء الاصطناعي مباشرةً في تطبيقاتك المفضّلة … 
-‏استخدِم Gemini لإنشاء مسودات وتحسين المحتوى، بالإضافة إلى الاستفادة من Gemini Pro مع إمكانية الوصول إلى الجيل التالي من ذكاء Google الاصطناعي مقابل ‎‏699.99 ج.م.‏‏ ‎‏229.99 ج.م.‏ لـ 3 أشهر
-
-# 📚 Bookstore Application - OpenShift 4.18 DevSecOps Project
-
 ## Project Overview
 
 An **advanced difficulty** enterprise-grade 4-tier web application for managing a bookstore inventory. This project implements **DevSecOps best practices** including container security scanning, multi-stage builds, and production-ready configurations for **OpenShift 4.18**.
 
-> ⚠️ **Challenge Level: Advanced** - This project requires understanding of container security, CI/CD pipelines, and enterprise deployment patterns.
 
 ## Architecture
 
@@ -108,24 +102,6 @@ An **advanced difficulty** enterprise-grade 4-tier web application for managing 
 | **Network Policies** | Restrict pod-to-pod communication | Only allowed traffic permitted |
 | **Pod Security Standards** | Restricted security context | Passes `restricted` PSS |
 
-## Bonus Points
-
-| Category | Bonus | Points | Description |
-|----------|-------|--------|-------------|
-| **Security** | Trivy Integration | +10 | Automated vulnerability scanning in pipeline |
-| **Security** | Network Policies | +8 | Deny-all default with explicit allow rules |
-| **Security** | Pod Security Standards | +7 | Restricted PSS compliance |
-| **Security** | Sealed Secrets | +5 | Encrypted secrets in Git |
-| **Performance** | Redis Caching | +5 | Query result caching with TTL |
-| **Performance** | HPA Configuration | +5 | Auto-scaling based on metrics |
-| **Reliability** | PodDisruptionBudget | +5 | Minimum availability during updates |
-| **Reliability** | Multi-replica Backend | +3 | At least 3 backend replicas |
-| **Observability** | Structured Logging | +5 | JSON logs with correlation IDs |
-| **Observability** | Health Endpoints | +5 | Detailed health/ready/live endpoints |
-| **DevOps** | GitOps Ready | +7 | All configs in Git, declarative deployment |
-| **DevOps** | Multi-stage Dockerfile | +5 | Optimized build process |
-
-**Total Bonus Points Available: 70**
 
 ## Prerequisites
 
@@ -267,33 +243,6 @@ oc get pods -l app=bookstore
 oc get route bookstore -o jsonpath='{.spec.host}'
 ```
 
-## Grading Criteria
-
-### Core Requirements (60 points)
-
-| Criteria | Points | Description |
-|----------|--------|-------------|
-| **Working Application** | 15 | All CRUD operations functional |
-| **Multi-tier Communication** | 10 | Frontend → Backend → Redis → MySQL |
-| **Security Scan Pass** | 15 | Zero critical/high CVEs (Trivy) |
-| **OpenShift Deployment** | 10 | All resources deployed correctly |
-| **Health Checks** | 5 | Liveness, readiness, startup probes |
-| **Documentation** | 5 | Clear README, API docs, comments |
-
-### Bonus Points (70 points)
-
-See [Bonus Points](#bonus-points) section above.
-
-### Penalties
-
-| Violation | Penalty |
-|-----------|---------|
-| Critical CVE in production | -20 points |
-| Hardcoded secrets | -15 points |
-| Running as root | -10 points per container |
-| Missing health checks | -5 points per container |
-| `:latest` tag usage | -5 points per image |
-| No resource limits | -5 points per pod |
 
 **Total Possible: 130 points** (60 core + 70 bonus)
 
@@ -331,20 +280,6 @@ trivy config openshift/
 trivy fs --scanners secret .
 ```
 
-### Handling CVE Exceptions
-
-Document any exceptions in `.trivyignore`:
-
-```
-# .trivyignore
-# CVE-2023-XXXXX - No fix available, mitigated by network policy
-# Reviewed: 2024-01-10, Reviewer: @security-team
-CVE-2023-XXXXX
-```
-
-## Troubleshooting
-
-### Security Issues
 
 ```bash
 # Check security context
@@ -383,24 +318,4 @@ oc top pods -l app=bookstore
 # Check Redis cache hit rate
 oc exec deployment/redis -- redis-cli INFO stats | grep hits
 ```
-
-## Success Criteria
-
-Before submitting, verify:
-
-- [ ] All Trivy scans pass (no HIGH/CRITICAL CVEs)
-- [ ] All containers run as non-root
-- [ ] All pods have resource limits
-- [ ] All deployments have health probes
-- [ ] Network policies restrict traffic
-- [ ] Application is accessible via Route
-- [ ] CRUD operations work correctly
-- [ ] Redis caching is functional
-- [ ] Logs are structured JSON
-- [ ] Documentation is complete
-
----
-
-**Good luck! 🚀 Remember: Security is not optional.**
-
 
