@@ -8,7 +8,7 @@ services:
   mysql:
     build:
       context: ./database
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: bookstore-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root123
@@ -19,7 +19,6 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p$MYSQL_ROOT_PASSWORD"]
       interval: 30s
@@ -45,7 +44,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: bookstore-backend
     depends_on:
       mysql:
@@ -75,12 +74,12 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: bookstore-frontend
     depends_on:
       - backend
     ports:
-      - "8080:8080"
+      - "8900:8080"
     networks:
       - bookstore-net
     restart: unless-stopped

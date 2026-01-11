@@ -1,0 +1,11 @@
+FROM mysql:8.0
+
+LABEL maintainer="student@example.com" \
+      version="1.1" \
+      description="Bookstore MySQL Database (Kubernetes Ready)"
+
+# Copy initialization script
+COPY init.sql /docker-entrypoint-initdb.d/init.sql
+
+# Optional documentation
+EXPOSE 3306

@@ -29,7 +29,11 @@ app.use(
   })
 );
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:8900'], // or '*' for testing
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 
 // ===================

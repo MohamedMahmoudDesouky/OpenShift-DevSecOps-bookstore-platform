@@ -1,5 +1,5 @@
 // Bookstore Application JavaScript
-const API_URL = '/api';
+const API_URL = '/api/';
 
 // DOM Elements
 const booksContainer = document.getElementById('booksContainer');
@@ -50,7 +50,8 @@ async function loadBooks() {
 
     try {
         const response = await fetch(`${API_URL}/books`);
-        const books = await response.json();
+        const result = await response.json();
+        const books = result.data;
 
         if (books.length === 0) {
             booksContainer.innerHTML = '<div class="no-books">📚 No books in inventory. Add your first book!</div>';
@@ -108,6 +109,8 @@ async function handleAddBook(e) {
             loadBooks();
             showNotification('Book added successfully!', 'success');
         } else {
+            const errorText = await response.text();
+            console.error('Backend error:', errorText);
             throw new Error('Failed to add book');
         }
     } catch (error) {
@@ -120,7 +123,8 @@ async function handleAddBook(e) {
 async function openEditModal(id) {
     try {
         const response = await fetch(`${API_URL}/books/${id}`);
-        const book = await response.json();
+        const result = await response.json();
+        const book = result.data; // ← FIXED: was 'books', should be 'book'
 
         document.getElementById('editId').value = book.id;
         document.getElementById('editTitle').value = book.title;
@@ -166,6 +170,8 @@ async function handleEditBook(e) {
             loadBooks();
             showNotification('Book updated successfully!', 'success');
         } else {
+            const errorText = await response.text();
+            console.error('Update error:', errorText);
             throw new Error('Failed to update book');
         }
     } catch (error) {
@@ -206,7 +212,8 @@ async function handleSearch() {
 
     try {
         const response = await fetch(`${API_URL}/books`);
-        const books = await response.json();
+        const result = await response.json();
+        const books = result.data;
 
         const filtered = books.filter(book =>
             book.title.toLowerCase().includes(query) ||
