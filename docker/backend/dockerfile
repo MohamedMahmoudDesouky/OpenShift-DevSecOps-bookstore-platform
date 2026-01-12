@@ -1,32 +1,42 @@
 # =========================
-# Build stage
+# Secure Multi-Stage Frontend Dockerfile (Distroless)
 # =========================
-FROM node:18-alpine AS build
 
-WORKDIR /app
+# -------------------------
+# BUILDER STAGE
+# -------------------------
+FROM docker.io/nginxinc/nginx-unprivileged:1.25.5-alpine AS builder
 
-# Install dependencies
-COPY package*.json ./
-RUN npm install --omit=dev
+USER root
 
-# Copy source code
-COPY server.js ./
+# Create ALL required directories
+RUN mkdir -p /usr/share/nginx/html /var/cache/nginx /tmp/client_temp /tmp/proxy_temp /tmp/fastcgi_temp
 
-# =========================
-# Runtime stage
-# =========================
-FROM node:18-alpine
+# Copy config and assets
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY html/ /usr/share/nginx/html/
 
-# OpenShift runs with random UID → group 0
-WORKDIR /app
-COPY --from=build /app /app
+# Validate config (temporarily replace backend)
+RUN sed -i 's|proxy_pass http://backend:3000;|proxy_pass http://127.0.0.1:3000;|' /etc/nginx/nginx.conf \
+ && nginx -t \
+ && sed -i 's|proxy_pass http://127.0.0.1:3000;|proxy_pass http://backend:3000;|' /etc/nginx/nginx.conf
 
-RUN chown -R 1001:0 /app \
- && chmod -R g=u /app
+# -------------------------
+# RUNTIME STAGE (Distroless)
+# -------------------------
+FROM gcr.io/distroless/base-debian12:nonroot
 
-USER 1001
+# Copy pre-created directories
+COPY --from=builder /usr/share/nginx /usr/share/nginx
+COPY --from=builder /var/cache/nginx /var/cache/nginx
+COPY --from=builder /tmp /tmp
+COPY --from=builder /etc/nginx /etc/nginx
 
-ENV NODE_ENV=production
-EXPOSE 3000
+# Copy nginx binary (statically compiled - no extra libs needed!)
+COPY --from=builder /usr/sbin/nginx /usr/sbin/nginx
 
-CMD ["node", "server.js"]
+# Only copy musl libc (required for Alpine binaries)
+COPY --from=builder /lib/ld-musl-x86_64.so.1 /lib/ld-musl-x86_64.so.1
+
+EXPOSE 8080
+CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
