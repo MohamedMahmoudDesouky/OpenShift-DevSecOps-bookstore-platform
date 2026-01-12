@@ -49,8 +49,20 @@ async function loadBooks() {
 
     try {
         const response = await fetch(`${API_URL}/books`);
+        
+        if (!response.ok) {
+            throw new Error('HTTP ${response.status}: ${response.statusText}');
+        }
+
         const result = await response.json();
-        const books = result.data;
+
+        // Handle backend error responses
+        if (result.error) {
+            throw new Error(result.error);
+        }
+
+        // Ensure result.data is an array
+        const books = Array.isArray(result.data) ? result.data : [];
 
         if (books.length === 0) {
             booksContainer.innerHTML = '<div class="no-books">📚 No books in inventory. Add your first book!</div>';
@@ -61,7 +73,7 @@ async function loadBooks() {
         bookCount.textContent = `${books.length} book${books.length !== 1 ? 's' : ''}`;
     } catch (error) {
         console.error('Error loading books:', error);
-        booksContainer.innerHTML = '<div class="no-books">❌ Error loading books. Check backend connection.</div>';
+        booksContainer.innerHTML = '<div class="no-books">❌ Error loading books: ${error.message}</div>';
     }
 }
 
