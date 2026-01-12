@@ -1,6 +1,5 @@
 // Bookstore Application JavaScript
-const API_URL = '/api/';
-
+const API_URL = '/api';
 // DOM Elements
 const booksContainer = document.getElementById('booksContainer');
 const addBookForm = document.getElementById('addBookForm');
