@@ -15,4 +15,3 @@ spec:
     matchLabels:
       app: mysql
       tier: database
-  unhealthyPodEvictionPolicy: IfHealthy  # Only evict if replacement is healthy
