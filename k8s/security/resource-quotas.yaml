@@ -6,21 +6,21 @@ metadata:
 spec:
   hard:
     # CPU limits
-    requests.cpu: "2"
-    limits.cpu: "4"
+    requests.cpu: "4"
+    limits.cpu: "8"
 
     # Memory limits
-    requests.memory: 2Gi
-    limits.memory: 4Gi
+    requests.memory: 6Gi
+    limits.memory: 12Gi
 
     # Max number of Pods
-    pods: "20"
+    pods: "50"
 
     # Max number of PersistentVolumeClaims
-    persistentvolumeclaims: "5"
+    persistentvolumeclaims: "15"
 
     # Max storage (sum of PVCs in this namespace)
-    requests.storage: 20Gi
+    requests.storage: 70Gi
 
     # Optional: max number of Services
-    services: "5"
+    services: "15"
