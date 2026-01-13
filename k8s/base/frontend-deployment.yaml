@@ -7,7 +7,7 @@ metadata:
     tier: frontend
   namespace: bookstore
 spec:
-  replicas: 3
+  replicas: 5
   selector:
     matchLabels:
       app: frontend
