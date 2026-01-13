@@ -4,3 +4,7 @@ kind: Kustomization
 resources:
   - backend-HPA.yaml
   - frontend-HPA.yaml
+  - pdb-backend.yaml
+  - pdb-frontend.yaml
+  - pdb-redis.yaml 
+  - pdb-database.yaml
