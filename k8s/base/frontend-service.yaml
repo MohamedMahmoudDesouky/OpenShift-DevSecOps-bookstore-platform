@@ -1,12 +1,14 @@
+# k8s/base/frontend-service.yaml
 apiVersion: v1
 kind: Service
 metadata:
   name: frontend
+  namespace: bookstore
   labels:
     app: frontend
     tier: frontend
 spec:
-  type: NodePort
+  type: ClusterIP  # ← Changed from NodePort
   selector:
     app: frontend
     tier: frontend
@@ -15,4 +17,3 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 8080
-      nodePort: 30081
