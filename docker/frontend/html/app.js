@@ -1,5 +1,6 @@
 // Bookstore Application JavaScript
 const API_URL = '/api';
+
 // DOM Elements
 const booksContainer = document.getElementById('booksContainer');
 const addBookForm = document.getElementById('addBookForm');
@@ -18,10 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Event Listeners
 function setupEventListeners() {
-    addBookForm.addEventListener('submit', handleAddBook);
-    editBookForm.addEventListener('submit', handleEditBook);
-    searchInput.addEventListener('input', handleSearch);
-    document.querySelector('.close').addEventListener('click', closeModal);
+    if (addBookForm) addBookForm.addEventListener('submit', handleAddBook);
+    if (editBookForm) editBookForm.addEventListener('submit', handleEditBook);
+    if (searchInput) searchInput.addEventListener('input', handleSearch);
+    const closeBtn = document.querySelector('.close');
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
     window.addEventListener('click', (e) => {
         if (e.target === editModal) closeModal();
     });
@@ -32,36 +34,41 @@ async function checkConnection() {
     try {
         const response = await fetch(`${API_URL}/health`);
         if (response.ok) {
-            connectionStatus.textContent = '✅ Connected';
-            connectionStatus.className = 'status-indicator connected';
+            if (connectionStatus) {
+                connectionStatus.textContent = '✅ Connected';
+                connectionStatus.className = 'status-indicator connected';
+            }
         } else {
             throw new Error('API not responding');
         }
     } catch (error) {
-        connectionStatus.textContent = '❌ Disconnected';
-        connectionStatus.className = 'status-indicator error';
+        if (connectionStatus) {
+            connectionStatus.textContent = '❌ Disconnected';
+            connectionStatus.className = 'status-indicator error';
+        }
     }
 }
 
 // Load Books
+// Load Books
 async function loadBooks() {
+    if (!booksContainer) return;
     booksContainer.innerHTML = '<div class="loading">Loading books...</div>';
 
     try {
         const response = await fetch(`${API_URL}/books`);
         
         if (!response.ok) {
-            throw new Error('HTTP ${response.status}: ${response.statusText}');
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        const result = await response.json();
+        const result = await response.json(); // ← { data: [...], fromCache: ... }
 
         // Handle backend error responses
         if (result.error) {
             throw new Error(result.error);
         }
 
-        // Ensure result.data is an array
         const books = Array.isArray(result.data) ? result.data : [];
 
         if (books.length === 0) {
@@ -70,23 +77,28 @@ async function loadBooks() {
             displayBooks(books);
         }
 
-        bookCount.textContent = `${books.length} book${books.length !== 1 ? 's' : ''}`;
+        if (bookCount) {
+            bookCount.textContent = `${books.length} book${books.length !== 1 ? 's' : ''}`;
+        }
     } catch (error) {
         console.error('Error loading books:', error);
-        booksContainer.innerHTML = '<div class="no-books">❌ Error loading books: ${error.message}</div>';
+        if (booksContainer) {
+            booksContainer.innerHTML = `<div class="no-books">❌ Error loading books: ${error.message}</div>`;
+        }
     }
 }
 
 // Display Books
 function displayBooks(books) {
+    if (!booksContainer) return;
     booksContainer.innerHTML = books.map(book => `
         <div class="book-card" data-id="${book.id}">
             <h3>${escapeHtml(book.title)}</h3>
             <p class="author">by ${escapeHtml(book.author)}</p>
-            <p class="isbn">ISBN: ${escapeHtml(book.isbn)}</p>
+            <p class="isbn">ISBN: ${escapeHtml(book.isbn || '')}</p>
             <div class="details">
                 <span class="price">$${parseFloat(book.price).toFixed(2)}</span>
-                <span class="stock">Stock: ${book.stock}</span>
+                <span class="stock">Stock: ${book.stock || 0}</span>
             </div>
             <div class="actions">
                 <button class="btn btn-edit" onclick="openEditModal(${book.id})">✏️ Edit</button>
@@ -101,12 +113,18 @@ async function handleAddBook(e) {
     e.preventDefault();
 
     const book = {
-        title: document.getElementById('title').value,
-        author: document.getElementById('author').value,
-        isbn: document.getElementById('isbn').value,
-        price: parseFloat(document.getElementById('price').value),
-        stock: parseInt(document.getElementById('stock').value)
+        title: document.getElementById('title')?.value,
+        author: document.getElementById('author')?.value,
+        isbn: document.getElementById('isbn')?.value,
+        price: parseFloat(document.getElementById('price')?.value),
+        stock: parseInt(document.getElementById('stock')?.value)
     };
+
+    // Validate
+    if (!book.title || !book.author || isNaN(book.price) || isNaN(book.stock)) {
+        showNotification('Please fill all fields correctly', 'error');
+        return;
+    }
 
     try {
         const response = await fetch(`${API_URL}/books`, {
@@ -116,7 +134,7 @@ async function handleAddBook(e) {
         });
 
         if (response.ok) {
-            addBookForm.reset();
+            if (addBookForm) addBookForm.reset();
             loadBooks();
             showNotification('Book added successfully!', 'success');
         } else {
@@ -135,16 +153,16 @@ async function openEditModal(id) {
     try {
         const response = await fetch(`${API_URL}/books/${id}`);
         const result = await response.json();
-        const book = result.data; // ← FIXED: was 'books', should be 'book'
+        const book = result.data; // ← backend returns { data: book }
 
-        document.getElementById('editId').value = book.id;
-        document.getElementById('editTitle').value = book.title;
-        document.getElementById('editAuthor').value = book.author;
-        document.getElementById('editIsbn').value = book.isbn;
-        document.getElementById('editPrice').value = book.price;
-        document.getElementById('editStock').value = book.stock;
+        if (document.getElementById('editId')) document.getElementById('editId').value = book.id;
+        if (document.getElementById('editTitle')) document.getElementById('editTitle').value = book.title;
+        if (document.getElementById('editAuthor')) document.getElementById('editAuthor').value = book.author;
+        if (document.getElementById('editIsbn')) document.getElementById('editIsbn').value = book.isbn || '';
+        if (document.getElementById('editPrice')) document.getElementById('editPrice').value = book.price;
+        if (document.getElementById('editStock')) document.getElementById('editStock').value = book.stock || 0;
 
-        editModal.classList.add('show');
+        if (editModal) editModal.classList.add('show');
     } catch (error) {
         console.error('Error loading book:', error);
         showNotification('Error loading book details', 'error');
@@ -153,20 +171,22 @@ async function openEditModal(id) {
 
 // Close Modal
 function closeModal() {
-    editModal.classList.remove('show');
+    if (editModal) editModal.classList.remove('show');
 }
 
 // Edit Book
 async function handleEditBook(e) {
     e.preventDefault();
 
-    const id = document.getElementById('editId').value;
+    const id = document.getElementById('editId')?.value;
+    if (!id) return;
+
     const book = {
-        title: document.getElementById('editTitle').value,
-        author: document.getElementById('editAuthor').value,
-        isbn: document.getElementById('editIsbn').value,
-        price: parseFloat(document.getElementById('editPrice').value),
-        stock: parseInt(document.getElementById('editStock').value)
+        title: document.getElementById('editTitle')?.value,
+        author: document.getElementById('editAuthor')?.value,
+        isbn: document.getElementById('editIsbn')?.value,
+        price: parseFloat(document.getElementById('editPrice')?.value),
+        stock: parseInt(document.getElementById('editStock')?.value)
     };
 
     try {
@@ -214,8 +234,8 @@ async function deleteBook(id) {
 
 // Search Books
 async function handleSearch() {
-    const query = searchInput.value.toLowerCase();
-
+    const query = searchInput?.value?.toLowerCase() || '';
+    
     if (query.length === 0) {
         loadBooks();
         return;
@@ -223,21 +243,24 @@ async function handleSearch() {
 
     try {
         const response = await fetch(`${API_URL}/books`);
-        const result = await response.json();
-        const books = result.data;
+        const books = await response.json();
 
         const filtered = books.filter(book =>
-            book.title.toLowerCase().includes(query) ||
-            book.author.toLowerCase().includes(query)
+            (book.title && book.title.toLowerCase().includes(query)) ||
+            (book.author && book.author.toLowerCase().includes(query))
         );
 
         if (filtered.length === 0) {
-            booksContainer.innerHTML = '<div class="no-books">🔍 No books found matching your search.</div>';
+            if (booksContainer) {
+                booksContainer.innerHTML = '<div class="no-books">🔍 No books found matching your search.</div>';
+            }
         } else {
             displayBooks(filtered);
         }
 
-        bookCount.textContent = `${filtered.length} book${filtered.length !== 1 ? 's' : ''} found`;
+        if (bookCount) {
+            bookCount.textContent = `${filtered.length} book${filtered.length !== 1 ? 's' : ''} found`;
+        }
     } catch (error) {
         console.error('Error searching books:', error);
     }
@@ -245,6 +268,7 @@ async function handleSearch() {
 
 // Utility: Escape HTML
 function escapeHtml(text) {
+    if (typeof text !== 'string') return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
