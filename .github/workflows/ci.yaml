@@ -135,7 +135,13 @@ jobs:
           kubectl create namespace bookstore || true
           kubectl apply -k k8s/overlays/prod/
           sleep 50
-          kubectl get pods -n bookstore -w
+          # MySQL
+          kubectl get pods -n bookstore -l app=mysql
+          kubectl logs -n bookstore -l app=mysql --tail=50
+          
+          # Redis
+          kubectl get pods -n bookstore -l app=redis
+          kubectl logs -n bookstore -l app=redis --tail=50
           kubectl wait --for=condition=available deployment/backend -n bookstore --timeout=200s
           
   
