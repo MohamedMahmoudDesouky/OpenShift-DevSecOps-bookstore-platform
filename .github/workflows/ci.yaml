@@ -135,13 +135,13 @@ jobs:
           kubectl create namespace bookstore || true
           kubectl apply -k k8s/overlays/prod/
   
-          kubectl wait --for=condition=available deployment/backend -n bookstore --timeout=120s
+          kubectl wait --for=condition=available deployment/backend -n bookstore --timeout=200s
   
-          kubectl port-forward svc/backend 8000:80 -n cloud-ninjas &
+          kubectl port-forward svc/backend 8990:3000 -n cloud-ninjas &
           PORT_FORWARD_PID=$!
-          sleep 5
+          sleep 10
   
-          curl -f http://localhost:8000/health
+          curl -f http://localhost:8990/api/health
   
           kill $PORT_FORWARD_PID 2>/dev/null
 
