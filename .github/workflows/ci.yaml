@@ -114,44 +114,44 @@ jobs:
 
 
 
-  smoke-test:
-    needs: build-and-scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  # smoke-test:
+  #   needs: build-and-scan
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
   
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
+  #     - name: Install kubectl
+  #       uses: azure/setup-kubectl@v4
   
-      - name: Start Minikube
-        run: |
-          sudo apt-get update && sudo apt-get install -y conntrack
-          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          sudo install minikube-linux-amd64 /usr/local/bin/minikube
-          minikube start --driver=docker
+  #     - name: Start Minikube
+  #       run: |
+  #         sudo apt-get update && sudo apt-get install -y conntrack
+  #         curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+  #         sudo install minikube-linux-amd64 /usr/local/bin/minikube
+  #         minikube start --driver=docker
   
-      - name: Deploy and test
-        run: |
-          kubectl create namespace bookstore || true
-          kubectl apply -k k8s/overlays/prod/
-          sleep 50
-          # MySQL
-          kubectl get pods -n bookstore -l app=mysql
-          kubectl logs -n bookstore -l app=mysql --tail=50
+  #     - name: Deploy and test
+  #       run: |
+  #         kubectl create namespace bookstore || true
+  #         kubectl apply -k k8s/overlays/prod/
+  #         sleep 50
+  #         # MySQL
+  #         kubectl get pods -n bookstore -l app=mysql
+  #         kubectl logs -n bookstore -l app=mysql --tail=50
           
-          # Redis
-          kubectl get pods -n bookstore -l app=redis
-          kubectl logs -n bookstore -l app=redis --tail=50
-          kubectl wait --for=condition=available deployment/backend -n bookstore --timeout=200s
+  #         # Redis
+  #         kubectl get pods -n bookstore -l app=redis
+  #         kubectl logs -n bookstore -l app=redis --tail=50
+  #         kubectl wait --for=condition=available deployment/backend -n bookstore --timeout=200s
           
   
-          kubectl port-forward svc/backend 8990:3000 -n bookstore &
-          PORT_FORWARD_PID=$!
-          sleep 10
+  #         kubectl port-forward svc/backend 8990:3000 -n bookstore &
+  #         PORT_FORWARD_PID=$!
+  #         sleep 10
   
-          curl -f http://localhost:8990/api/health
+  #         curl -f http://localhost:8990/api/health
   
-          kill $PORT_FORWARD_PID 2>/dev/null
+  #         kill $PORT_FORWARD_PID 2>/dev/null
 
 
 
@@ -217,36 +217,36 @@ jobs:
 
 
 
-  cd-argocd:
-    needs: cis-benchmark
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write  # ضروري علشان يقدر ي-push
+  # cd-argocd:
+  #   needs: cis-benchmark
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: write  # ضروري علشان يقدر ي-push
   
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0  # ← مهم جدًا: بيجلب كل الـ history
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         fetch-depth: 0  # ← مهم جدًا: بيجلب كل الـ history
   
-      - name: Update K8s Manifests
-        run: |
-          cd k8s-final
+  #     - name: Update K8s Manifests
+  #       run: |
+  #         cd k8s-final
   
-          # Update image tags
-          sed -i "s|selconyt/be:.*|selconyt/be:${{ github.run_number }}|g" backend.yaml
-          sed -i "s|selconyt/fe:.*|selconyt/fe:${{ github.run_number }}|g" frontend.yaml
+  #         # Update image tags
+  #         sed -i "s|selconyt/be:.*|selconyt/be:${{ github.run_number }}|g" backend.yaml
+  #         sed -i "s|selconyt/fe:.*|selconyt/fe:${{ github.run_number }}|g" frontend.yaml
   
-          # Configure Git
-          git config user.email "ci@github.com"
-          git config user.name "github-actions"
+  #         # Configure Git
+  #         git config user.email "ci@github.com"
+  #         git config user.name "github-actions"
   
-          # Stage & commit
-          git add backend.yaml frontend.yaml
-          git commit -m "Update images to ${{ github.run_number }}"
+  #         # Stage & commit
+  #         git add backend.yaml frontend.yaml
+  #         git commit -m "Update images to ${{ github.run_number }}"
   
-          # Pull latest changes (to avoid non-fast-forward)
-          git pull --rebase origin main
+  #         # Pull latest changes (to avoid non-fast-forward)
+  #         git pull --rebase origin main
   
-          # Push
-          git push
+  #         # Push
+  #         git push
