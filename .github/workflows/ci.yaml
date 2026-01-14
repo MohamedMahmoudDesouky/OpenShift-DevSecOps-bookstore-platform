@@ -2,7 +2,7 @@ name: Professional CI Pipeline (SonarCloud + Trivy + Smoke + CIS)
 
 on:
   push:
-    branches: [ main, dev, QA ]
+    branches: [ main, test ]
   pull_request:
     branches: [ main ]
 
@@ -48,7 +48,7 @@ jobs:
         if: always()
         run: |
           curl -s -u ${{ secrets.SONAR_TOKEN }}: \
-            "https://sonarcloud.io/api/measures/component?component=MohamedMahmoudDesouky_cloud-ninjas-production-platform&metricKeys=bugs,vulnerabilities,code_smells,coverage,security_rating" \
+            "https://sonarcloud.io/api/measures/component?component=MohamedMahmoudDesouky_OpenShift-DevSecOps-bookstore-platform&branch=main&metricKeys=bugs,vulnerabilities,code_smells,coverage,security_rating" \
             | jq '.' > sonar-report.json
 
           echo "✅ SonarCloud report saved to sonar-report.json"
@@ -67,10 +67,10 @@ jobs:
         service:
           - name: backend
             context: docker/backend
-            image: selconyt/be
+            image: selconyt/bookstores-backend
           - name: frontend
             context: docker/frontend
-            image: selconyt/fe
+            image: selconyt/bookstores-frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -94,7 +94,7 @@ jobs:
         with:
           context: ${{ matrix.service.context }}
           load: true
-          tags: ${{ matrix.service.image }}:${{ github.run_number }}
+          tags: ${{ matrix.service.image }}:${{ github.sha }}
 
 
 
@@ -110,7 +110,7 @@ jobs:
           context: ${{ matrix.service.context }}
           push: true
           tags: |
-            ${{ matrix.service.image }}:${{ github.run_number }}
+            ${{ matrix.service.image }}:${{ github.sha }}
 
 
 
@@ -132,10 +132,10 @@ jobs:
   
       - name: Deploy and test
         run: |
-          kubectl create namespace cloud-ninjas || true
-          kubectl apply -f k8s-final/ci-final/
+          kubectl create namespace bookstore || true
+          kubectl apply -k k8s/overlays/prod/
   
-          kubectl wait --for=condition=available deployment/backend -n cloud-ninjas --timeout=120s
+          kubectl wait --for=condition=available deployment/backend -n bookstore --timeout=120s
   
           kubectl port-forward svc/backend 8000:80 -n cloud-ninjas &
           PORT_FORWARD_PID=$!
