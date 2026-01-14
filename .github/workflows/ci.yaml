@@ -134,8 +134,10 @@ jobs:
         run: |
           kubectl create namespace bookstore || true
           kubectl apply -k k8s/overlays/prod/
-  
+          sleep 50
+          kubectl get pods -n bookstore -w
           kubectl wait --for=condition=available deployment/backend -n bookstore --timeout=200s
+          
   
           kubectl port-forward svc/backend 8990:3000 -n bookstore &
           PORT_FORWARD_PID=$!
@@ -148,7 +150,6 @@ jobs:
 
 
   cis-benchmark:
-    needs: smoke-test
     runs-on: ubuntu-latest
     steps:
       # 1️⃣ Checkout code (مهم لو في أي ملفات configs أو scripts)
