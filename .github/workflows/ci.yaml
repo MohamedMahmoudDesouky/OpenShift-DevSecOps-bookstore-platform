@@ -48,7 +48,7 @@ jobs:
         if: always()
         run: |
           curl -s -u ${{ secrets.SONAR_TOKEN }}: \
-            "https://sonarcloud.io/api/measures/component?component=MohamedMahmoudDesouky_OpenShift-DevSecOps-bookstore-platform,vulnerabilities,code_smells,coverage,security_rating" \
+            "https://sonarcloud.io/api/measures/component?component=MohamedMahmoudDesouky_OpenShift-DevSecOps-bookstore-platform&metricKeys=vulnerabilities,code_smells,coverage,security_rating" \
             | jq '.' > sonar-report.json
 
           echo "✅ SonarCloud report saved to sonar-report.json"
