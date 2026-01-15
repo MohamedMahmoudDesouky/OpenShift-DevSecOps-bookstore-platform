@@ -104,6 +104,11 @@ kubectl apply -k k8s/security
 
 # Apply autoscaling & reliability:-
 kubectl apply -k k8s/auto-scaling
+
+```
+#### To apply it all in one step, We use kustomization file
+```bash
+kubectl apply -k k8s/overlays/prod/
 ```
 ### 3. Access the Application
 ```bash
