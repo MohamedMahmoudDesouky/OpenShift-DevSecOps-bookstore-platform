@@ -244,7 +244,6 @@ oc get route bookstore -o jsonpath='{.spec.host}'
 ```
 
 
-**Total Possible: 130 points** (60 core + 70 bonus)
 
 ## API Endpoints
 
