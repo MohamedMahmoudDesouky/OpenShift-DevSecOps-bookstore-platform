@@ -122,11 +122,11 @@ An **advanced difficulty** enterprise-grade 4-tier web application for managing 
 
 ### Required Knowledge
 
-- [ ] Container fundamentals (Dockerfile, multi-stage builds)
-- [ ] Kubernetes concepts (Deployments, Services, ConfigMaps, Secrets)
-- [ ] OpenShift specifics (Routes, SecurityContextConstraints)
-- [ ] Security best practices (CVE remediation, least privilege)
-- [ ] Networking (Network Policies, TLS termination)
+- [x] Container fundamentals (Dockerfile, multi-stage builds)
+- [x] Kubernetes concepts (Deployments, Services, ConfigMaps, Secrets)
+- [x] OpenShift specifics (Routes, SecurityContextConstraints)
+- [x] Security best practices (CVE remediation, least privilege)
+- [x] Networking (Network Policies, TLS termination)
 
 ## Project Structure
 
