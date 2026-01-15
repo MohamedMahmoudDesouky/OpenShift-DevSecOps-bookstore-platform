@@ -1,11 +1,50 @@
-FROM mysql:8.0
+# ---------- Stage 1: minimal base ----------
+FROM mysql:8.0.36 AS base
 
 LABEL maintainer="student@example.com" \
-      version="1.1" \
-      description="Bookstore MySQL Database (Kubernetes Ready)"
+      version="2.0" \
+      description="Secure Bookstore MySQL Database"
 
-# Copy initialization script
-COPY init.sql /docker-entrypoint-initdb.d/init.sql
+# Prevent package manager usage inside runtime
+RUN rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Optional documentation
+# ---------- Stage 2: hardening ----------
+FROM mysql:8.0.36
+
+# Create non-root mysql runtime user (mysql already exists but ensure UID fixed)
+ARG MYSQL_UID=999
+ARG MYSQL_GID=999
+
+RUN groupmod -g ${MYSQL_GID} mysql && \
+    usermod -u ${MYSQL_UID} mysql && \
+    mkdir -p /var/lib/mysql /docker-entrypoint-initdb.d && \
+    chown -R mysql:mysql /var/lib/mysql /docker-entrypoint-initdb.d && \
+    chmod 750 /var/lib/mysql
+
+# Copy init SQL with read-only permission
+COPY --chown=mysql:mysql init.sql /docker-entrypoint-initdb.d/01-init.sql
+RUN chmod 400 /docker-entrypoint-initdb.d/01-init.sql
+
+# Remove dangerous MySQL features
+RUN echo "[mysqld]\nskip-symbolic-links\nskip-name-resolve\nlocal-infile=0" \
+    > /etc/mysql/conf.d/hardening.cnf
+
+# Disable root login remotely
+RUN echo "[mysqld]\nbind-address=0.0.0.0" >> /etc/mysql/conf.d/hardening.cnf
+
+# Drop unnecessary tools
+RUN rm -rf /usr/bin/mysqlpump \
+           /usr/bin/mysqlslap \
+           /usr/bin/mysqlimport
+
+# Read-only root filesystem support
+VOLUME ["/var/lib/mysql"]
+
+# Enforce non-root execution
+USER mysql
+
 EXPOSE 3306
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD \
+  mysqladmin ping -h 127.0.0.1 --silent || exit 1
